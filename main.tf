@@ -23,7 +23,7 @@ resource "azurerm_virtual_network" "myterraformnetworkwings" {
   resource_group_name = azurerm_resource_group.rg.name
 }
 
-#creat subnet
+# create subnet 1
 resource "azurerm_subnet" "myterraformsubnetpterodactil" {
   name                 = "${var.prefix}_subnet_pterodactil"
   resource_group_name  = azurerm_resource_group.rg.name
@@ -31,23 +31,29 @@ resource "azurerm_subnet" "myterraformsubnetpterodactil" {
   address_prefixes     = ["10.0.4.0/24"]
 }
 
-#creat subnet 2
+# create subnet 2
 resource "azurerm_subnet" "myterraformsubnetwings" {
   name                 = "${var.prefix}_subnet_wings"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.myterraformnetworkwings.name
   address_prefixes     = ["10.0.6.0/24"]
 }
-#creat public ip 
+# create public ip 1
 resource "azurerm_public_ip" "mypublicip" {
-  name                 = "${var.prefix}_public_ip"
+  name                 = "${var.prefix}_public_ip1"
   resource_group_name  = azurerm_resource_group.rg.name
   location             = azurerm_resource_group.rg.location
   # virtual_network_name = azurerm_virtual_network.myterraformnetwork.name
   allocation_method    = "Static"
 }
-
-
+# create public ip 2
+resource "azurerm_public_ip" "mypublicip2" {
+  name                 = "${var.prefix}_public_ip2"
+  resource_group_name  = azurerm_resource_group.rg.name
+  location             = azurerm_resource_group.rg.location
+  # virtual_network_name = azurerm_virtual_network.myterraformnetwork.name
+  allocation_method    = "Static"
+}
 # Create Network Security Group and rule
 resource "azurerm_network_security_group" "myterraformsecuritygroup" {
   name                = "${var.prefix}_security_group"
@@ -74,7 +80,7 @@ resource "azurerm_network_interface" "myterraformnetworkinterface" {
   resource_group_name = azurerm_resource_group.rg.name
 
   ip_configuration {
-    name                          = "${var.prefix}_ip_config"
+    name                          = "${var.prefix}_ip_config2"
     subnet_id                     = azurerm_subnet.myterraformsubnetpterodactil.id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.mypublicip.id
@@ -96,7 +102,7 @@ resource "azurerm_linux_virtual_machine" "myterraformvm" {
   size                  = "Standard_DS1_v2"
 
   os_disk {
-    name                 = "myOsDisk"
+    name                 = "myOsDisk2"
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
   }
@@ -180,7 +186,13 @@ resource "azurerm_lb" "load-balance" {
   resource_group_name = azurerm_resource_group.rg.name
 
   frontend_ip_configuration {
-    name                 = "${var.prefix}ip_public"
-    public_ip_address_id = azurerm_public_ip.mypublicip.id
+    name                 = "${var.prefix}ip_public2"
+    public_ip_address_id = azurerm_public_ip.mypublicip2.id
   }
+}
+
+
+resource "azurerm_lb_backend_address_pool" "backendpool" {
+  loadbalancer_id = azurerm_lb.load-balance.id
+  name            = "BackEndAddressPool"
 }
